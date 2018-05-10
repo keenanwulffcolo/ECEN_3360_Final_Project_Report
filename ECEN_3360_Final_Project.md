@@ -36,11 +36,11 @@ The data flow of our original design has information coming from the gyroscope a
 
 This changed slightly with the introduction of the UV photodiode system. Here, we mounted the UV LED to the fork on the bike frame in line to where the photodiode rested on the microcontroller, which is mounted on the wheel. The LED was connected to a power source, also mounted to the frame, in series with an 820 $$\Omega$$ resistor, meaning current of 1.8 $$mA$$:
 
-
+![LED Circcuit Diagram.jpg](LED Circcuit Diagram.jpg)
 
 Our photodiode is in reverse bias with a 3.3 $$V$$ pin on the microcontroller and is followed by a 1 $$M\Omega$$ pull down resistor. To avoid interference from the idle voltage on the input pin, we put a comparator circuit on the output, set to flip at 1.75 voltgis:
 
-
+![Photo Diode Interrupt Generator.jpg](Photo Diode Interrupt Generator.jpg)
 
 This drives a GPIO interrupt on the microcontroller, which records the time since the last GPIO interrupt, utilizing the time count from a 32-bit onboard timer set to interrupt every millisecond. The relevant code is below. 
 
