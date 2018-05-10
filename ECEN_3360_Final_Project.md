@@ -28,4 +28,23 @@ Once the two devices are paired, the master device chooses a profile in which to
 
 On the other end of our project, there is a ultraviolet photodiode and ultraviolet (UV) light emitting diode (LED) pair. The LED emits UV light when put in forward bias, and the photodiode acts as a "receiver;" it overcomes the reverse bias put on it when receiving UV light, and thus starts conducting current.
 
-Finally, there was one technology cut from our project: the I2C gyroscope. 
+Finally, there was one technology cut from our project: the I2C gyroscope. I2C is a synchronous master-slave interface where each slave is assigned a unique 7-bit identifier. I2C operates over 8-bit packets, where the first packet in each transmission consists of the device identifier and a single bit indication of whether the master intends to read or write. In the case of the MPU-6050, that is followed by an address indicating which register to read or write. If it is a read, the slave communicates back the read data.
+
+## Design
+
+The data flow of our original design has information coming from the gyroscope and communicating with the microcontroller, where it underwent simple calibration. Then, the calibrated data went out via UART to the Bluetooth transmitter, which relayed the same data over Bluetooth, utilizing the Serial Port Profile. There, the data is displayed on the phone.
+
+This changed slightly with the introduction of the UV photodiode system. Here, we mounted the UV LED to the fork on the bike frame in line to where the photodiode rested on the microcontroller, which is mounted on the wheel. The LED was connected to a power source, also mounted to the frame, in series with an 820 $$\Omega$$ resistor, meaning a 1.8 $$mA$$ current:
+
+
+
+Our photodiode is in reverse bias with a 3.3 $$V$$ pin on the microcontroller and is followed by a 1 $$M\Omega$$ pull down resistor. To avoid interference from the idle voltage on the input pin, we put a comparator circuit on the output, set to flip at 1.75 volts:
+
+
+
+This drives a GPIO interrupt on the microcontroller, which records the time since the last GPIO interrupt, utilizing the time count from a 32-bit onboard timer set to interrupt every millisecond. The relevant code is below
+
+
+
+From there, we 
+
