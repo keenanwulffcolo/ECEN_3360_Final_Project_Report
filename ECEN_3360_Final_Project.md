@@ -44,8 +44,8 @@ Our photodiode is in reverse bias with a 3.3 $$V$$ pin on the microcontroller an
 
 This drives a GPIO interrupt on the microcontroller, which records the time since the last GPIO interrupt, utilizing the time count from a 32-bit onboard timer set to interrupt every millisecond. The relevant code is below. 
 
-
 To house the circuitry we designed, we laser cut  two sheets of acrylic using the laser cutter in the ITLL. We cut out a square for each of the microcontroller, Bluetooth module, MPU-6050, and battery bank seperately on one sheet. We held everything in place using zip ties. on the other sheet, we cut holes for zip ties to attach to the spokes of a bike wheel, and attached the two sheets with velcro. This made it so that we could slide the somponent sheet in and out through the spokes, while everything stayed in place when the bike was moving. A picture can be seen below. 
+
 
 ## Results
 
@@ -55,7 +55,7 @@ We ran into problems with the MPU-6050 module once we used the USB power bank to
 
 The infrared LED and photdiode pair ex=nded up being fairly accurate. We used an interrupt triggered timer to measure the time between rotations, and had to simply multiply that by a conversion factor. The only problem with this was practicality. When you are outside, there is a lot of infrared light from the sun. When the sun is shining on the photodiod, we get very unpredictable results as the interrupt is constantly being triggered. To alleviate this, we could have made a sun shield for the photodiode, but did not have the time. 
 
-If we were to attempt this project again, we don't think our approach would change drastically. We would want to have more knowledge of the MPU-6050, and figure out why that wasn't working. Other than that, we feel our approach would've worked very well had we gotten it working. We were very pleased with out final product for the time we put in. We estimate that we put in about 20 hours of work into the project. A good portion of that was trying to debug the problems with the MPU-6050, and near the end when we decided to change our aproach to the infrared LED and photodiode pair. 
+If we were to attempt this project again, we don't think our approach would change drastically. We would want to have more knowledge of the MPU-6050, and figure out why that wasn't working. Other than that, we feel our approach would've worked very well had we gotten it working. 
 
 ### Cost Analysis
 
@@ -70,6 +70,10 @@ If we were to attempt this project again, we don't think our approach would chan
 | Total | 51.21 |
 
 ## Conclusion
+
+We were very pleased with out final product for the time we put in. We estimate that we put in about 20 hours of work into the project. A good portion of that was trying to debug the problems with the MPU-6050, and near the end when we decided to change our aproach to the infrared LED and photodiode pair. 
+
+As far as the class goes, we thought it was fairly repetitive. Most of the information in the labs we had learned in previous classes. We could've moved a little faster and had more new information/topics in the labs. Our 3 favourite from others' projects were: 1) The glove that opened the doornob remotely 2) The locking trash can 3) The portable oscilloscope.
 
 
 ## Code
