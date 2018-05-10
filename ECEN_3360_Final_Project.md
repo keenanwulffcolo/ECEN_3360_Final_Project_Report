@@ -70,3 +70,327 @@ If we were to attempt this project again, we don't think our approach would chan
 | Total | 51.21 |
 
 ## Conclusion
+
+
+## Code
+Main.c
+```C
+#define CONFIG_ENABLE_DRIVER_ADC 1
+#include "driver_config.h"
+#include "target_config.h"
+#define CONFIG_ENABLE_DRIVER_TIMER32 1
+#include "timer32.h"
+#include "uart.h"
+#include "GPIO.h"
+#include "adc.h"
+#include "i2c.h"
+#define BF_SYSTICK_COUNTFLAG    (1<<16)
+#include "mpu6050.h"
+extern volatile uint32_t UARTCount;
+extern volatile uint8_t UARTBuffer[BUFSIZE];
+extern volatile uint32_t NewCount;
+extern volatile uint16_t timer_new;
+int16_t GyroBuffer[6];
+char MainState = 0;
+
+int main (void) {
+	  /* Basic chip initialization is taken care of in SystemInit() called
+	   * from the startup code. SystemInit() and chip settings are defined
+	   * in the CMSIS system_<part family>.c file.
+	   */
+
+  /* NVIC is installed inside UARTInit file. */
+  UARTInit(9600);
+
+  UARTCount = 0;
+  Timer_config();
+  GPIO_config();
+  Timer_start(0);
+  GPIO_LED_setHigh(3);//set AD0 Low
+#if 0  //code for I2C communication
+  if ( I2CInit( (uint32_t)I2CMASTER ) == FALSE )	/* initialize I2c */
+  {
+	while (1);				/* Fatal error */
+  }
+
+  while(~MainState){	//wait for start signal from phone
+  MainState = getChar();
+  }
+#endif
+
+  /*UNUSED MPU-6050 config code
+  mpu6050Power();//initialize Gyro Module
+  mpu6050CommTest();
+  mpu6050Write(0x23, 0x71);//enable 3-axis Gyro FIFO and ACC FIFO
+  mpu6050Write(0x1B, 0x18);//set Full scale range to +/- 250/s(0x08=500/s, 0x10=1000/s, 0x18=2000/s)
+  mpu6050Write(0x1C, 0x18);*/
+
+  while (1) 
+  {				/* Loop forever */
+	  /*UNUSED I2C communication code
+	   * mpu6050ReadGyro(0x43,GyroBuffer);//Read Gyro
+	   * UARTsendString(GyroBuffer, 6);
+	   */
+	  //printf("%d, %d, %d \n",GyroBuffer[0], GyroBuffer[1], GyroBuffer[2]);
+	  
+	  uint32_t total;
+	  uint16_t newval;
+	  GPIO_LED_setHigh(7);
+	  total = (uint32_t)((uint32_t)165*(uint32_t)6283*(uint32_t)1000/(uint32_t)timer_new);
+	  newval = (uint16_t)(total/1000);
+	  char *nString = itoa(newval);
+	  sendString(nString);
+	  sendString("\n");
+
+
+	  GPIO_LED_setLow(7);
+	  int i;
+	  for(i = 1; i<1000000; i++);
+  }
+}
+```
+Timer.c
+```C
+#include "GPIO.h"
+volatile uint16_t us_count;
+void sendString(char * inString){
+	  LPC_UART->IER = IER_THRE | IER_RLS;			/* Disable RBR */
+	uint32_t length = 0;
+	while(inString[length] != '\0'){
+		length++;
+	}
+	UARTSend((uint8_t *)inString, length);
+	LPC_UART->IER = IER_THRE | IER_RLS | IER_RBR;	/* Re-enable RBR */
+}
+
+void Timer_config(void){
+	LPC_SYSCON->SYSAHBCLKCTRL |= (1<<9);
+	LPC_TMR32B0->TCR = 0x2;
+	LPC_TMR32B0->PR = 0x0; // set pr
+	LPC_TMR32B0->MCR =  0x03; //trigger interrupt if TC = MR0 and clear MR0
+	LPC_TMR32B0->MR0 = 48000; // trigger every 1 ms
+	NVIC_EnableIRQ(TIMER_32_0_IRQn);
+	LPC_SYSCON->SYSAHBCLKCTRL |= (1<<10);
+}
+
+void Timer_start(uint8_t timerNum){
+	switch(timerNum){
+		case 0:
+			LPC_TMR32B0->TCR = 0x1;
+			break;
+		case 1:
+			LPC_TMR32B1->TCR = 0x1;
+			break;
+	}
+}
+
+void Timer_stop(uint8_t timerNum){
+	switch(timerNum){
+		case 0:
+			LPC_TMR32B0->TCR &= ~0x1;
+			break;
+		case 1:
+			LPC_TMR32B1->TCR &= ~0x1;
+			break;
+	}
+}
+
+
+void TIMER32_0_IRQHandler(void){
+	LPC_TMR32B0->TCR &= ~0x1;
+	LPC_TMR32B0->IR = (1<<0); // reset interrupt
+	us_count++;
+	LPC_TMR32B0->TCR |= 0x1;
+}
+
+char outString[4];
+char teststr[] = "0123456789";
+char* itoa(uint16_t num){
+	uint16_t i;
+	uint16_t num2;
+	for(i = 0; i < 5; i++){
+		num2 = num%10;
+		outString[4-i] = teststr[num2];
+		num = num/10;
+	}
+	return outString;
+}
+```
+GPIO.c
+```C
+#include "GPIO.h"
+extern volatile uint16_t us_count;
+volatile uint16_t timer_new;
+uint8_t GPIO_config(void){
+	/* Enable AHB clock to the GPIO domain. */
+	LPC_SYSCON->SYSAHBCLKCTRL |= (1<<6);
+	// LED Port 0 Pin 7(red), 9(blue), 8(green)
+	LPC_GPIO0->DIR |= ((0x1)<<3 |
+					   (0x1)<<7 |
+					   (0x1)<<9 |
+					   (0x1)<<8 );
+	//
+	LPC_GPIO2->DIR = 0;
+	LPC_GPIO2->IS &= ~(1 << 6);
+	LPC_GPIO2->IBE &= ~(1 << 6);
+	LPC_GPIO2->IEV &= ~(1 << 6);
+	LPC_GPIO2->IE |= (1 << 6);
+	NVIC_EnableIRQ(EINT2_IRQn);
+	if(((LPC_GPIO0->RIS&0x02)>>1) == 0){
+		//return 1;
+	}
+	return 0;
+}
+void GPIO_LED_setHigh(uint8_t pin){
+	LPC_GPIO0->DATA &= ~(1<<pin);
+}
+void GPIO_LED_setLow(uint8_t pin){
+	LPC_GPIO0->DATA |= (1<<pin);
+}
+void GPIO_startLED(){
+	Timer_start(0);
+}
+void GPIO_stopLED(){
+	Timer_stop(0);
+	GPIO_LED_setLow(7);
+}
+void PIOINT2_IRQHandler(void){
+	if(LPC_GPIO2->MIS & (1<<6)){
+		LPC_GPIO2->IC |= (1<<6);//clear interrupt
+		if(us_count > 10){
+			timer_new = us_count;
+		}
+		us_count = 0;
+		LPC_GPIO0->DATA ^= (1<<8);
+	}
+}
+```
+mpu6050.c
+```C
+#include "mpu6050.h"
+#include "i2c.h"
+#include "driver_config.h"
+#include "target_config.h"
+#include "GPIO.h"
+#include "type.h"
+extern volatile uint32_t I2CCount;
+extern volatile uint8_t I2CMasterBuffer[BUFSIZE];
+extern volatile uint8_t I2CSlaveBuffer[BUFSIZE];
+extern volatile uint32_t I2CMasterState;
+extern volatile uint32_t RdIndex;
+extern volatile uint32_t I2CReadLength, I2CWriteLength;
+/* MPU6050 read data, can be used to grab data from sensor*/
+void mpu6050ReadGyro(uint8_t startRegAddr, int16_t *GyroBuffer){
+	RdIndex = 0;
+    // Clear buffers
+    uint32_t i, ERR_CODE;
+    for (i = 0; i < BUFSIZE; i++) {
+        I2CMasterBuffer[i] = 0x00;
+        I2CSlaveBuffer[i] = 0x00;
+    }
+    //uint8_t tempBuffer[6];
+    // Write to MPU6050 sensor: start to read from which sensor
+    // TO-DO
+    I2CWriteLength = 2;
+    I2CReadLength = 1;
+    //X AXIS
+	I2CMasterBuffer[0] = MPU6050_ADDR;
+	I2CMasterBuffer[1] = startRegAddr;		/* address */
+	I2CMasterBuffer[2] = MPU6050_ADDR | RD_BIT;
+	ERR_CODE = I2CEngine();
+	GyroBuffer[0] = I2CSlaveBuffer[0]<<8;
+
+	I2CMasterBuffer[1] = startRegAddr +1;		/* address */
+	ERR_CODE = I2CEngine();
+	GyroBuffer[0] |= I2CSlaveBuffer[0];
+}
+
+void mpu6050ReadTest(uint8_t regAdd) {
+        // Clear buffers
+        uint32_t i, ERR_CODE;
+        for (i = 0; i < BUFSIZE; i++) {
+            I2CMasterBuffer[i] = 0x00;
+            I2CSlaveBuffer[i] = 0x00;
+        }
+        /* Read who am i register for testing */
+        // Tell MPU6050 sensor: what is your name? -- Read the WHO_AM_I register
+        // TO-DO
+      I2CWriteLength = 2;
+	  I2CReadLength = 1;
+	  I2CMasterBuffer[0] = MPU6050_ADDR;
+	  I2CMasterBuffer[1] = regAdd;		/* address */
+	  I2CMasterBuffer[2] = MPU6050_ADDR | RD_BIT;
+	  ERR_CODE = I2CEngine();
+	  if(ERR_CODE == 11){
+		  //printf("Start Condition Never Generated\n");
+	  }
+	  UARTSend(I2CSlaveBuffer, 1);//send who_am_i to phone
+}
+/* MPU6050 write data, can be used to configure register*/
+void mpu6050Write(uint8_t regAdd,uint8_t regValue) {
+        // Clear buffers
+        uint32_t i, ERR_CODE;
+        for (i = 0; i < BUFSIZE; i++) {
+            I2CMasterBuffer[i] = 0x00;
+            I2CSlaveBuffer[i] = 0x00;
+        }
+        // Write to MPU6050: set a value to a register
+        // TO-DO
+        I2CWriteLength = 3;
+        I2CReadLength = 0;
+        I2CMasterBuffer[0] = MPU6050_ADDR;
+        I2CMasterBuffer[1] = regAdd;		/* address */
+        I2CMasterBuffer[2] = regValue;
+        ERR_CODE = I2CEngine();
+        if(ERR_CODE==11){
+        	GPIO_LED_setHigh(0x8);//set Blue LED
+        }
+    }
+
+void mpu6050Power(void) {
+        // Clear buffers
+        uint32_t i, ERR_CODE;
+
+        for (i = 0; i < BUFSIZE; i++) {
+            I2CMasterBuffer[i] = 0x00;
+            I2CSlaveBuffer[i] = 0x00;
+        }
+        // Write to MPU6050: set a value to a register
+        // TO-DO
+      I2CWriteLength = 3;
+	  I2CReadLength = 0;
+	  I2CMasterBuffer[0] = MPU6050_ADDR;
+	  I2CMasterBuffer[1] = PWR_MGMT_1;		/* address */
+	  I2CMasterBuffer[2] = PWR_WAKE_DATA;
+	  ERR_CODE = I2CEngine();
+	  //printf("Error Code %x\n", ERR_CODE);
+	  if(ERR_CODE==11){
+	          	GPIO_LED_setHigh(0x9);//set Blue LED
+	  }
+    }
+/* MPU6050 read who_am_i register, can be used to test I2C communication*/
+void mpu6050CommTest(void) {
+        // Clear buffers
+        uint32_t i, ERR_CODE;
+        for (i = 0; i < BUFSIZE; i++) {
+            I2CMasterBuffer[i] = 0x00;
+            I2CSlaveBuffer[i] = 0x00;
+        }
+        /* Read who am i register for testing */
+        // Tell MPU6050 sensor: what is your name? -- Read the WHO_AM_I register
+        // TO-DO
+      I2CWriteLength = 2;
+	  I2CReadLength = 1;
+	  I2CMasterBuffer[0] = MPU6050_ADDR;
+	  I2CMasterBuffer[1] = WHO_AM_I;		/* address */
+	  I2CMasterBuffer[2] = MPU6050_ADDR | RD_BIT;
+	  ERR_CODE = I2CEngine();
+	  if(ERR_CODE == 11){
+		  //printf("Start Condition Never Generated\n");
+	  }
+        // Print the value stored in WHO_AM_I register
+        //printf("Who_am_I = 0x%X ?\n",I2CSlaveBuffer[0]);
+	  //UARTSend(0xAA, 1);
+	  UARTSend(I2CSlaveBuffer, 1);
+    }
+```
