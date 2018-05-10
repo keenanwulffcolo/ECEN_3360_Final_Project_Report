@@ -45,30 +45,22 @@ Our photodiode is in reverse bias with a 3.3 $$V$$ pin on the microcontroller an
 
 This drives a GPIO interrupt on the microcontroller, which records the time since the last GPIO interrupt, utilizing the time count from a 32-bit onboard timer set to interrupt every millisecond. The relevant code is below
 
-
-
-From there, we 
-=======
-Finally, there was one technology cut from our project: the I2C gyroscope. 
-
 ## Results
 
-In our project, we did accomplish the goal we set out to. We made a nike spedometer that accurately read us the speed the bike was traveling at. Our overall functionality was correct, but we did run not complete everything we had hoped. 
+In our project, we did accomplish the goal we set out to. We made a bike speedometer that accurately read us the speed the bike was traveling at. Our overall functionality was correct, but we did run not complete everything we had hoped. 
 
 We ran into problems with the MPU-6050 module once we used the USB power bank to to power everything. We had the desired functionality when plugged into the debugger, but not without. We were still able to power on the chip, and configure the registers we needed. We also read these configuration registers to check the right values. However, when we read the gyroscope data registers they returned zero values. We weren’t certain of the cause of this, and tried everything we could to diagnose this. Instead of this, we used an infrared LED, and an infrared sensor to measure the speed of the bike.  
 
-We also were not able to get the bluetooth app working on our phone. We could not get the communication working between the phone’s bluetooth, and the app itself. Because of this, we simply used an already existing bluetooth serial communication app. 
+We also were not able to get the Bluetooth app working on our phone. We could not get the communication working between the phone’s Bluetooth, and the app itself. Because of this, we simply used an already existing Bluetooth serial communication app. 
 
-### Cost Aalysis
+### Cost Analysis
 
-| Compnent | Cost |
+| Component | Cost |
 | -------- | ---- |
 | AGS 2600mAh USB Power bank | $7.99 |
 | GY-521 MPU-6050 | $4.66 |
 | HC-06 Bluetooth Serial Module | $8.99 |
 | NXP LPC1115 | $26.57 |
 | IR LED | $1.00 |
-| IR Sensor | $2.00 | 
-| Total | 43.22| 
->>>>>>> refs/remotes/origin/master
-
+| IR Sensor | $2.00 |
+| Total | 43.22|
