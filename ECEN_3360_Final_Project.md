@@ -55,7 +55,7 @@ We ran into problems with the MPU-6050 module once we used the USB power bank to
 
 The infrared LED and photdiode pair ex=nded up being fairly accurate. We used an interrupt triggered timer to measure the time between rotations, and had to simply multiply that by a conversion factor. The only problem with this was practicality. When you are outside, there is a lot of infrared light from the sun. When the sun is shining on the photodiod, we get very unpredictable results as the interrupt is constantly being triggered. To alleviate this, we could have made a sun shield for the photodiode, but did not have the time. 
 
-If we were to attempt this project again, we don't think our approach would change drastically. We would want to have more knowledge of the MPU-6050, and figure out why that wasn't working. Other than that, we feel our approach would've worked very well had we gotten in working. 
+If we were to attempt this project again, we don't think our approach would change drastically. We would want to have more knowledge of the MPU-6050, and figure out why that wasn't working. Other than that, we feel our approach would've worked very well had we gotten it working. We were very pleased with out final product for the time we put in. We estimate that we put in about 20 hours of work into the project. A good portion of that was trying to debug the problems with the MPU-6050, and near the end when we decided to change our aproach to the infrared LED and photodiode pair. 
 
 ### Cost Analysis
 
