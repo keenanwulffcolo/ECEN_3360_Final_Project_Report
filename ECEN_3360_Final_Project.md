@@ -67,6 +67,6 @@ If we were to attempt this project again, we don't think our approach would chan
 | NXP LPC1115 | $26.57 |
 | IR LED | $1.00 |
 | IR Sensor | $2.00 |
-| Total | 43.22|
+| Total | 51.21 |
 
 ## Conclusion
