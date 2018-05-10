@@ -34,7 +34,7 @@ Finally, there was one technology cut from our project: the I2C gyroscope. I2C i
 
 The data flow of our original design has information coming from the gyroscope and communicating with the microcontroller, where it underwent simple calibration. Then, the calibrated data went out via UART to the Bluetooth transmitter, which relayed the same data over Bluetooth, utilizing the Serial Port Profile. There, the data is displayed on the phone.
 
-This changed slightly with the introduction of the UV photodiode system. Here, we mounted the UV LED to the fork on the bike frame in line to where the photodiode rested on the microcontroller, which is mounted on the wheel. The LED was connected to a power source, also mounted to the frame, in series with an 820 $$\Omega$$ resistor, meaning a 1.8 $$mA$$ current:
+This changed slightly with the introduction of the UV photodiode system. Here, we mounted the UV LED to the fork on the bike frame in line to where the photodiode rested on the microcontroller, which is mounted on the wheel. The LED was connected to a power source, also mounted to the frame, in series with an 820 $$\Omega$$ resistor, meaning current of 1.8 $$mA$$:
 
 
 
@@ -42,14 +42,20 @@ Our photodiode is in reverse bias with a 3.3 $$V$$ pin on the microcontroller an
 
 
 
-This drives a GPIO interrupt on the microcontroller, which records the time since the last GPIO interrupt, utilizing the time count from a 32-bit onboard timer set to interrupt every millisecond. The relevant code is below
+This drives a GPIO interrupt on the microcontroller, which records the time since the last GPIO interrupt, utilizing the time count from a 32-bit onboard timer set to interrupt every millisecond. The relevant code is below. 
+
+
+To house the circuitry we designed, we laser cut  two sheets of acrylic using the laser cutter in the ITLL. We cut out a square for each of the microcontroller, Bluetooth module, MPU-6050, and battery bank seperately on one sheet. We held everything in place using zip ties. on the other sheet, we cut holes for zip ties to attach to the spokes of a bike wheel, and attached the two sheets with velcro. This made it so that we could slide the somponent sheet in and out through the spokes, while everything stayed in place when the bike was moving. A picture can be seen below. 
 
 ## Results
 
-In our project, we did accomplish the goal we set out to. We made a bike speedometer that accurately read us the speed the bike was traveling at. Our overall functionality was correct, but we did run not complete everything we had hoped. 
+In our project, we did accomplish the goal we set out to. We made a bike speedometer that accurately read us the speed the bike was traveling at. Our overall functionality was correct, but we did not complete everything we had hoped. 
 
-We ran into problems with the MPU-6050 module once we used the USB power bank to to power everything. We had the desired functionality when plugged into the debugger, but not without. We were still able to power on the chip, and configure the registers we needed. We also read these configuration registers to check the right values. However, when we read the gyroscope data registers they returned zero values. We weren’t certain of the cause of this, and tried everything we could to diagnose this. Instead of this, we used an infrared LED, and an infrared sensor to measure the speed of the bike.  
+We ran into problems with the MPU-6050 module once we used the USB power bank to to power everything. We had the desired functionality when plugged into the debugger, but not without. We were still able to power on the chip, and configure the registers we needed. We also read these configuration registers to check the right values. However, when we read the gyroscope data registers they returned zero values. We weren’t certain of the cause of this, and tried everything we could to diagnose this. Because of these issues, we decided to use an infrared LED and an infrared photodiode sensor to measure the speed of the bike.  
 
+The infrared LED and photdiode pair ex=nded up being fairly accurate. We used an interrupt triggered timer to measure the time between rotations, and had to simply multiply that by a conversion factor. The only problem with this was practicality. When you are outside, there is a lot of infrared light from the sun. When the sun is shining on the photodiod, we get very unpredictable results as the interrupt is constantly being triggered. To alleviate this, we could have made a sun shield for the photodiode, but did not have the time. 
+
+If we were to attempt this project again, we don't think our approach would change drastically. We would want to have more knowledge of the MPU-6050, and figure out why that wasn't working. Other than that, we feel our approach would've worked very well had we gotten in working. 
 
 ### Cost Analysis
 
