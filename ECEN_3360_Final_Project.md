@@ -28,39 +28,36 @@ Once the two devices are paired, the master device chooses a profile in which to
 
 On the other end of our project, there is a ultraviolet photodiode and ultraviolet (UV) light emitting diode (LED) pair. The LED emits UV light when put in forward bias, and the photodiode acts as a "receiver;" it overcomes the reverse bias put on it when receiving UV light, and thus starts conducting current.
 
-<<<<<<< HEAD
-Finally, there was one technology cut from our project: the I2C gyroscope. I2C is a synchronous master-slave interface where each slave is assigned a unique 7-bit identifier. I2C operates over 8-bit packets, where the first packet in each transmission consists of the device identifier and a single bit indication of whether the master intends to read or write. In the case of the MPU-6050, that is followed by an address indicating which register to read or write. If it is a read, the slave communicates back the read data.
-
-## Design
-
-The data flow of our original design has information coming from the gyroscope and communicating with the microcontroller, where it underwent simple calibration. Then, the calibrated data went out via UART to the Bluetooth transmitter, which relayed the same data over Bluetooth, utilizing the Serial Port Profile. There, the data is displayed on the phone.
-
-This changed slightly with the introduction of the UV photodiode system. Here, we mounted the UV LED to the fork on the bike frame in line to where the photodiode rested on the microcontroller, which is mounted on the wheel. The LED was connected to a power source, also mounted to the frame, in series with an 820 $$\Omega$$ resistor, meaning a 1.8 $$mA$$ current:
-
-
-
-Our photodiode is in reverse bias with a 3.3 $$V$$ pin on the microcontroller and is followed by a 1 $$M\Omega$$ pull down resistor. To avoid interference from the idle voltage on the input pin, we put a comparator circuit on the output, set to flip at 1.75 volts:
-
-
-
-This drives a GPIO interrupt on the microcontroller, which records the time since the last GPIO interrupt, utilizing the time count from a 32-bit onboard timer set to interrupt every millisecond. The relevant code is below
+Finally, there was one technology cut from our project: the I2C gyroscope. 
 
 ## Results
 
-In our project, we did accomplish the goal we set out to. We made a bike speedometer that accurately read us the speed the bike was traveling at. Our overall functionality was correct, but we did run not complete everything we had hoped. 
+In our project, we did accomplish the goal we set out to. We made a nike spedometer that accurately read us the speed the bike was traveling at. Our overall functionality was correct, but we did run not complete everything we had hoped. 
 
-We ran into problems with the MPU-6050 module once we used the USB power bank to to power everything. We had the desired functionality when plugged into the debugger, but not without. We were still able to power on the chip, and configure the registers we needed. We also read these configuration registers to check the right values. However, when we read the gyroscope data registers they returned zero values. We weren’t certain of the cause of this, and tried everything we could to diagnose this. Instead of this, we used an infrared LED, and an infrared sensor to measure the speed of the bike.  
+We ran into problems with the MPU-6050 module once we used the USB power bank to to power everything. We had the desired functionality when plugged into the debugger, but not without. We were still able to power on the chip, and configure the registers we needed. We also read these configuration registers to check the right values. However, when we read the gyroscope data registers they returned zero values. We weren’t certain of the cause of this, and tried everything we could to diagnose this. Instead of this, we used an infrared LED, and an infrared sensor to measure the speed of the bike.
 
-We also were not able to get the Bluetooth app working on our phone. We could not get the communication working between the phone’s Bluetooth, and the app itself. Because of this, we simply used an already existing Bluetooth serial communication app. 
+The LED and photodiode pair with the timer ended up being fairly accurate. It was just an exact timer value multipled by a conversion factor. The only problem with it was that if we were biking with the sun facing the photodiode, we would get very inacurate data, as the interrupt would always be triggering. To combat this, we could've made a sun shield to aleviate some of those problems. This method is also fairly slow at low speeds, because we are sampling once per rotation. 
 
-### Cost Analysis
+If we had more time, we would have tried many more approaches to try to diagnose the problems with the MPU-6050. 
 
-| Component | Cost |
+### Cost Aalysis
+
+| Compnent | Cost |
 | -------- | ---- |
 | AGS 2600mAh USB Power bank | $7.99 |
 | GY-521 MPU-6050 | $4.66 |
 | HC-06 Bluetooth Serial Module | $8.99 |
 | NXP LPC1115 | $26.57 |
 | IR LED | $1.00 |
-| IR Sensor | $2.00 |
-| Total | 43.22|
+| IR Sensor | $2.00 | 
+| Total | 43.22| 
+
+## Conclusion
+
+
+
+```c
+#include som c code
+
+here's some more
+```
